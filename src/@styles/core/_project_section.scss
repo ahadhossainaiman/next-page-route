@@ -1,0 +1,34 @@
+.project_section {
+  .slider_controller {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    .ps_pagination {
+      @apply space-x-1;
+      .swiper-pagination-bullet {
+        width: 8px;
+        height: 8px;
+        background-color: var(--color-primary);
+        opacity: 1;
+        &-active {
+          background-color: var(--color-white);
+        }
+      }
+    }
+    .ps_btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--color-secondary-bg);
+      color: var(--color-white);
+      width: 24px;
+      height: 24px;
+      border-radius: 100%;
+      cursor: pointer;
+      &.ps_disabled_btn {
+        cursor: not-allowed;
+        color: var(--color-gray-700);
+      }
+    }
+  }
+}

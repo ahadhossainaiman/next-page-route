@@ -1,0 +1,87 @@
+name: Deploy BILLION MARKETS WEB Staging CI
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  build-billion-market-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate .env
+        run: |
+          envsubst "`printf '${%s} ' $(sh -c "env|cut -d'=' -f1")`" < ./.env.example > ./.env
+        env:
+          NEXT_PUBLIC_WEB_TITLE: Billion Markets
+          NEXT_PUBLIC_WEB_DESCRIPTION: A platform to invest for future
+
+          NEXT_PUBLIC_INTERNAL_API_URL: https://api-stg.billionmarkets.com/api/v1
+          NEXT_PUBLIC_API_URL: https://api-stg.billionmarkets.com/api/v1
+          NEXT_PUBLIC_WEB_MODE: staging
+          NEXT_PUBLIC_WEB_HOST_URL: https://stg.billionmarkets.com
+          NEXT_PUBLIC_STORAGE_URL: https://stg.billionmarkets.com
+
+          NEXT_PUBLIC_ENABLE_RBAC: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: yarn install --ignore-scripts
+
+      - name: Build the project
+        run: yarn run build
+        env:
+          CI: false
+
+      - name: Archive build artifacts
+        run: tar -czf stg-billion-market-web.tar.gz .next public node_modules package.json yarn.lock Dockerfile
+
+      - name: Deploy Build Artifacts to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_PRIVATE_KEY }}
+          source: stg-billion-market-web.tar.gz
+          target: /home/quicksoft/stg-billion-market-web/
+
+  deploy-billion-market-web-to-staging:
+    needs: build-billion-market-web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy web to DigitalOcean Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USERNAME }}
+          key: ${{ secrets.STAGING_SERVER_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /home/quicksoft/stg-billion-market-web/
+
+            echo "Extracting build artifacts..."
+            tar -xzf stg-billion-market-web.tar.gz
+            rm stg-billion-market-web.tar.gz
+            echo "Stopping existing container..."
+            docker stop bm-web-stg || true
+            docker rm bm-web-stg || true
+
+            echo "Building the image..."
+            docker build -t bm-web-stg:local .
+
+            echo "starting server instance..."
+            docker run -e NODE_ENV=staging -d \
+              --restart always \
+              --network quicksoft_net1 \
+              -p 2050:2050 \
+              --name bm-web-stg \
+              bm-web-stg:local
+
+            docker builder prune -f
+            docker image prune -f
+            echo "Deploy Done...."

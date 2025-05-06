@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  // Customize Scrollbar
+  .hidden_scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .designed_scrollbar {
+    &::-webkit-scrollbar {
+      width: 0.25rem;
+      &-track {
+        background-color: var(--color-bg);
+      }
+      &-thumb {
+        background-color: var(--color-secondary-bg);
+        border-radius: 1rem;
+      }
+    }
+  }
+}
+
+@import './utils/index.scss';
+@import './core/index.scss';
+
+// Swiper
+@import 'swiper/css';
+@import 'swiper/css/pagination';
+@import 'swiper/css/navigation';
+@import 'swiper/css/scrollbar';
+
+:root {
+  @apply designed_scrollbar;
+}
+
+// AntD
+.ant-btn-primary {
+  box-shadow: none !important;
+}
+
+.ant-select-dropdown {
+  .rc-virtual-list {
+    .rc-virtual-list-holder {
+      @apply designed_scrollbar;
+    }
+  }
+}
+
+.transparent_table {
+  background: transparent !important;
+  .ant-table,
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    background: transparent !important;
+    border: none !important;
+    color: white;
+  }
+  .ant-table-thead > tr > th {
+    font-weight: bold;
+  }
+  .ant-table-placeholder {
+    background: transparent !important;
+  }
+
+  [data-theme='light'] & {
+    .ant-table,
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      color: #111;
+    }
+  }
+}
+
+// Jodit
+.jodit_theme_custom {
+  background-color: var(--color-secondary-bg) !important;
+  border-color: #424242 !important;
+  .jodit-toolbar__box {
+    background-color: transparent !important;
+  }
+  .jodit-workplace {
+    background-color: transparent !important;
+  }
+  .jodit-status-bar {
+    background-color: transparent !important;
+  }
+}

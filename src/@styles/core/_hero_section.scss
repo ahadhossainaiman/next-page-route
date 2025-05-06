@@ -1,0 +1,37 @@
+.hero_section_slider {
+  .slider_wrapper {
+    position: relative;
+    .slider_controller {
+      .hss_btn {
+        position: absolute;
+        top: 50%;
+        width: fit-content;
+        color: var(--color-primary);
+        z-index: 1;
+        cursor: pointer;
+        @include xl {
+          transform: translate(0, -100%);
+        }
+        &.hss_prev_btn {
+          right: 100%;
+          transform: translate(-45%, -50%);
+          @include xl {
+            left: -70px;
+          }
+        }
+        &.hss_next_btn {
+          left: 100%;
+          transform: translate(45%, -50%);
+          @include xl {
+            left: unset;
+            right: -70px;
+          }
+        }
+        &.hss_disabled_btn {
+          cursor: not-allowed;
+          color: var(--color-gray-700);
+        }
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@ import CustomLink from '@base/components/CustomLink';
 import OtpVerificationForm from '@base/components/OtpVerificationForm';
 import { Messages, Paths, States } from '@lib/constant';
 import useSessionState from '@lib/hooks/useSessionState';
-import { Storage } from '@lib/utils';
+import { Cookies, Storage } from '@lib/utils';
 import { ENUM_USERS_TYPES } from '@modules/admin/users/lib/enums';
 import { Button, Flex, Form, Input, message, Spin } from 'antd';
 import dynamic from 'next/dynamic';
@@ -43,17 +43,28 @@ const SignInSection = () => {
 
         const verifiedData = data?.data as any;
 
-        if (!verifiedData?.user?.isEmailVerified) {
-          Storage.setData(hashKey, verifiedData?.hash);
-          Storage.setData(identifierKey, verifiedData?.identifier);
-          setOtpVerifyModalOpen(true);
-          return;
-        }
+        console.log('====>', verifiedData);
 
-        setAuthSession(data.data);
-        messageApi.loading(Messages.signIn(Env.webTitle), 1).then(() => {
-          const url =
-            data?.data?.user?.type === ENUM_USERS_TYPES.Internal ? Paths.admin.adminRoot : Paths.users.usersRoot;
+        // if (!verifiedData?.user?.isEmailVerified) {
+        //   Storage.setData(hashKey, verifiedData?.hash);
+        //   Storage.setData(identifierKey, verifiedData?.identifier);
+        //   setOtpVerifyModalOpen(true);
+        //   return;
+        // }
+        Cookies.setData('accessToken', verifiedData?.accessToken);
+        Cookies.setData('refreshToken', verifiedData?.refreshToken);
+        Cookies.setData('permissionToken', verifiedData?.permissionToken);
+
+        // setAuthSession(data.data);
+        messageApi.loading(Messages.signIn('success'), 1).then(() => {
+          console.log(Paths.admin.adminRoot);
+
+          // const url =
+          //   data?.data?.user?.type === ENUM_USERS_TYPES.Internal ? Paths.admin.adminRoot : Paths.users.usersRoot;
+            const url = Paths.admin.adminRoot;
+          console.log(url);
+          console.log('ahad', redirectUrl);
+
           window.location.replace(redirectUrl || url);
         });
       },

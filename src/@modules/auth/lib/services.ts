@@ -11,6 +11,8 @@ export const AuthServices = {
 
   signIn: async (payload: ISignIn): Promise<ISignInResponse> => {
     try {
+      console.log('========>', END_POINT, payload);
+
       const res = await AxiosInstance.post(`${END_POINT}/login`, payload);
       return Promise.resolve(res?.data);
     } catch (error) {

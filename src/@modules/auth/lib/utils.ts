@@ -19,13 +19,18 @@ const unAuthorizeSession: ISession = {
 
 export const getServerAuthSession = (req: { cookies: Record<string, any> }): ISession => {
   try {
-    const token = req.cookies[authTokenKey] || req.cookies.get(authTokenKey)?.value;
+    const token = req.cookies['accessToken'] || req.cookies.get('accessToken')?.value;
+    console.log('ahad=======>', token);
 
     if (!token) {
       return unAuthorizeSession;
     } else {
       const tokenDec: IToken = jwtDecode(token);
+      // console.log(tokenDec);
+
       const isExpire = isJwtExpire(tokenDec);
+
+      // console.log('expire', isExpire);
 
       if (isExpire) {
         return unAuthorizeSession;

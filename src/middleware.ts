@@ -14,7 +14,9 @@ export default async function middleware(req: NextRequest) {
   const host = req.headers.get('x-forwarded-host') || hostname;
   const hostProtocol = req.headers.get('x-forwarded-proto') || protocol;
 
-  // Skip paths
+  console.log('pathName', pathname);
+
+  // Skip paths for Next.js internal files, API routes, and public files
   if (pathname.startsWith('/_next') || pathname.includes('/api/') || PUBLIC_FILE_PATTERN.test(pathname)) {
     return res;
   }
@@ -23,8 +25,10 @@ export default async function middleware(req: NextRequest) {
   if (UnAuthPaths.includes(pathname)) {
     try {
       const session = getServerAuthSession(req);
+      console.log('session======>', session);
 
       if (session.isAuthenticate) {
+        console.log('session======>');
         return NextResponse.redirect(new URL(`${hostProtocol}://${host}`), {
           status: 302,
           headers: { 'Cache-Control': 'no-store' },
@@ -39,29 +43,45 @@ export default async function middleware(req: NextRequest) {
   if (Toolbox.isDynamicPath(AuthPaths, pathname)) {
     try {
       const session = getServerAuthSession(req);
+      console.log(session);
 
+      // If not authenticated, redirect to sign-in page with original path
       if (!session.isAuthenticate) {
         const redirectUrl = new URL(
           `${Paths.auth.signIn}?${REDIRECT_PREFIX}=${encodeURIComponent(`${hostProtocol}://${host}${pathname}${search}`)}`,
           `${hostProtocol}://${host}`,
         );
+        console.log('Redirect URL for unauthenticated:', redirectUrl);
 
         return NextResponse.redirect(redirectUrl, {
           status: 302,
           headers: { 'Cache-Control': 'no-store' },
         });
-      } else if (pathname.startsWith(Paths.users.usersRoot) && session.user.type === ENUM_USERS_TYPES.Internal) {
-        return NextResponse.redirect(new URL(Paths.admin.adminRoot, `${hostProtocol}://${host}`), {
+      }
+
+      // Redirect Super Admin to /admin
+      if (pathname.startsWith(Paths.admin.adminRoot) && session.user.roles && session.user.roles[0] === 'Super Admin') {
+        const redirectToAdminUrl = new URL(`${Paths.admin.adminRoot}`, `${hostProtocol}://${host}`);
+        console.log('Redirecting Super Admin to /admin:', redirectToAdminUrl);
+
+        return NextResponse.redirect(redirectToAdminUrl, {
           status: 302,
           headers: { 'Cache-Control': 'no-store' },
         });
-      } else if (pathname.startsWith(Paths.admin.adminRoot) && session.user.type === ENUM_USERS_TYPES.Customer) {
-        return NextResponse.redirect(new URL(Paths.users.usersRoot, `${hostProtocol}://${host}`), {
+      }
+
+      // Redirect Customer to /users
+      if (pathname.startsWith(Paths.admin.adminRoot) && session.user.type === ENUM_USERS_TYPES.Customer) {
+        const redirectToUsersUrl = new URL(`${Paths.users.usersRoot}`, `${hostProtocol}://${host}`);
+        console.log('Redirecting Customer to /users:', redirectToUsersUrl);
+
+        return NextResponse.redirect(redirectToUsersUrl, {
           status: 302,
           headers: { 'Cache-Control': 'no-store' },
         });
       }
     } catch (error) {
+      console.log('Error in middleware:', error);
       return res;
     }
   }

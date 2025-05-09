@@ -51,19 +51,20 @@ const SignInSection = () => {
         //   setOtpVerifyModalOpen(true);
         //   return;
         // }
+        Storage.setData('accessToken', verifiedData?.accessToken);
+        Storage.setData('refreshToken', verifiedData?.refreshToken);
+        Storage.setData('permissionToken', verifiedData?.permissionToken);
         Cookies.setData('accessToken', verifiedData?.accessToken);
         Cookies.setData('refreshToken', verifiedData?.refreshToken);
         Cookies.setData('permissionToken', verifiedData?.permissionToken);
 
         // setAuthSession(data.data);
-        messageApi.loading(Messages.signIn('success'), 1).then(() => {
-          console.log(Paths.admin.adminRoot);
+        messageApi.loading(Messages.signIn('Admin'), 1).then(() => {
+          // console.log(Paths.admin.adminRoot);
 
           // const url =
           //   data?.data?.user?.type === ENUM_USERS_TYPES.Internal ? Paths.admin.adminRoot : Paths.users.usersRoot;
-            const url = Paths.admin.adminRoot;
-          console.log(url);
-          console.log('ahad', redirectUrl);
+          const url = Paths.admin.adminRoot;
 
           window.location.replace(redirectUrl || url);
         });

@@ -9,6 +9,8 @@ interface IProps {
 
 const Authorization: React.FC<IProps> = ({ allowedAccess, children = null, fallBack = null }) => {
   const hasAccess: boolean = hasAccessPermission(allowedAccess);
+  console.log('hasAccess', hasAccess);
+  console.log('allowedAccess', allowedAccess);
 
   return hasAccess ? children : fallBack;
 };

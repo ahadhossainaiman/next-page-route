@@ -14,8 +14,6 @@ export default async function middleware(req: NextRequest) {
   const host = req.headers.get('x-forwarded-host') || hostname;
   const hostProtocol = req.headers.get('x-forwarded-proto') || protocol;
 
-  console.log('pathName', pathname);
-
   // Skip paths for Next.js internal files, API routes, and public files
   if (pathname.startsWith('/_next') || pathname.includes('/api/') || PUBLIC_FILE_PATTERN.test(pathname)) {
     return res;
@@ -29,21 +27,28 @@ export default async function middleware(req: NextRequest) {
 
       if (session.isAuthenticate) {
         console.log('session======>');
-        return NextResponse.redirect(new URL(`${hostProtocol}://${host}`), {
-          status: 302,
-          headers: { 'Cache-Control': 'no-store' },
-        });
+
+
+        if (pathname !== '/') {
+          return NextResponse.redirect(new URL(`${hostProtocol}://${host}`), {
+            status: 302,
+            headers: { 'Cache-Control': 'no-store' },
+          })
+
+
+        }
       }
     } catch (error) {
       return res;
     }
   }
+  // console.log("0000000000>", AuthPaths, pathname);
 
-  // Handle authenticated paths
+  // // Handle authenticated paths
   if (Toolbox.isDynamicPath(AuthPaths, pathname)) {
     try {
       const session = getServerAuthSession(req);
-      console.log(session);
+      console.log("session", session);
 
       // If not authenticated, redirect to sign-in page with original path
       if (!session.isAuthenticate) {
@@ -61,24 +66,41 @@ export default async function middleware(req: NextRequest) {
 
       // Redirect Super Admin to /admin
       if (pathname.startsWith(Paths.admin.adminRoot) && session.user.roles && session.user.roles[0] === 'Super Admin') {
-        const redirectToAdminUrl = new URL(`${Paths.admin.adminRoot}`, `${hostProtocol}://${host}`);
-        console.log('Redirecting Super Admin to /admin:', redirectToAdminUrl);
+        if (pathname !== Paths.admin.adminRoot) {
+          const redirectToAdminUrl = new URL(`${Paths.admin.adminRoot}`, `${hostProtocol}://${host}`);
+          console.log('Redirecting Super Admin to /admin:', redirectToAdminUrl);
 
-        return NextResponse.redirect(redirectToAdminUrl, {
-          status: 302,
-          headers: { 'Cache-Control': 'no-store' },
-        });
+          return NextResponse.redirect(redirectToAdminUrl, {
+            status: 302,
+            headers: { 'Cache-Control': 'no-store' },
+          });
+        }
+      }
+      // Redirect Admin to /admin if the user is an admin
+      if (pathname.startsWith(Paths.admin.adminRoot) && session.user.type === ENUM_USERS_TYPES.Admin) {
+        if (pathname !== Paths.admin.adminRoot) {
+          const redirectToAdminUrl = new URL(`${Paths.admin.adminRoot}`, `${hostProtocol}://${host}`);
+          console.log('Redirecting Admin to /admin:', redirectToAdminUrl);
+
+          return NextResponse.redirect(redirectToAdminUrl, {
+            status: 302,
+            headers: { 'Cache-Control': 'no-store' },
+          });
+        }
       }
 
       // Redirect Customer to /users
-      if (pathname.startsWith(Paths.admin.adminRoot) && session.user.type === ENUM_USERS_TYPES.Customer) {
-        const redirectToUsersUrl = new URL(`${Paths.users.usersRoot}`, `${hostProtocol}://${host}`);
-        console.log('Redirecting Customer to /users:', redirectToUsersUrl);
 
-        return NextResponse.redirect(redirectToUsersUrl, {
-          status: 302,
-          headers: { 'Cache-Control': 'no-store' },
-        });
+      if (pathname.startsWith(Paths.users.usersRoot) && session.user.type === ENUM_USERS_TYPES.Customer) {
+        if (pathname !== Paths.users.usersRoot) {
+          const redirectToUsersUrl = new URL(`${Paths.users.usersRoot}`, `${hostProtocol}://${host}`);
+          console.log('Redirecting Customer to /users:', redirectToUsersUrl);
+
+          return NextResponse.redirect(redirectToUsersUrl, {
+            status: 302,
+            headers: { 'Cache-Control': 'no-store' },
+          });
+        }
       }
     } catch (error) {
       console.log('Error in middleware:', error);

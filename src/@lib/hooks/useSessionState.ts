@@ -19,6 +19,8 @@ const useSessionState = <T = any>(
 
   const handleChangeFn = (e: ISessionStateEvent) => {
     if (e.key !== config.key || e.type !== 'onChangeSessionState') return;
+    console.log('SessionState', e.key, e.value);
+
     setStoreValue(e.value);
   };
 

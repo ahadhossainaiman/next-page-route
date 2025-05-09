@@ -17,7 +17,7 @@ const WithAuthorization = <P extends object>(
       <div className="flex justify-center">
         <div className="flex flex-col items-center bg-white p-5 rounded-lg shadow-md">
           <RiAlarmWarningFill color="#ef4444" size={32} className="animate-pulse" />
-          <h3 className="text-2xl font-bold text-red-500">Unauthorized Access</h3>
+          <h3 className="text-2xl font-bold text-red-500">Unauthorized Access Ahad</h3>
           <p className="mt-2 text-gray-500">You do not have permission to access this page!</p>
         </div>
       </div>
@@ -27,9 +27,11 @@ const WithAuthorization = <P extends object>(
   const AuthorizationComponent: React.FC<P> = (props) => {
     const [isLoading, setLoading] = useState(true);
     const [hasAccess, setHasAccess] = useState(false);
+    console.log('hasAccess', hasAccess);
 
     useEffect(() => {
       setHasAccess(hasAccessPermission(allowedAccess));
+      console.log('hasAccess', hasAccess);
       setLoading(false);
     }, []);
 

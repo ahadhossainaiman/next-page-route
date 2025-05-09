@@ -20,13 +20,14 @@ const unAuthorizeSession: ISession = {
 export const getServerAuthSession = (req: { cookies: Record<string, any> }): ISession => {
   try {
     const token = req.cookies['accessToken'] || req.cookies.get('accessToken')?.value;
+    // const token = Storage.getData(authTokenKey);
     console.log('ahad=======>', token);
 
     if (!token) {
       return unAuthorizeSession;
     } else {
       const tokenDec: IToken = jwtDecode(token);
-      // console.log(tokenDec);
+      console.log("999999>>>", tokenDec);
 
       const isExpire = isJwtExpire(tokenDec);
 
@@ -41,7 +42,7 @@ export const getServerAuthSession = (req: { cookies: Record<string, any> }): ISe
           user: {
             ...tokenDec.user,
           },
-          token,
+          token: token,
         };
       }
     }
@@ -170,6 +171,8 @@ export const isJwtExpire = (token: string | IToken): boolean => {
 export const getPermissions = (): TPermission[] => {
   try {
     const token = Storage.getData(permissionTokenKey);
+    console.log('getPermissions', token);
+
 
     if (token) {
       const tokenDec: { permissions: TPermission[] } = jwtDecode(token);
@@ -186,6 +189,7 @@ export const getPermissions = (): TPermission[] => {
 export const hasAccessPermission = (allowedAccess: TPermission[]): boolean => {
   if (Env.isEnableRBAC === 'false') return true;
   else if (sessionUserCache?.roles?.includes(Roles.SUPER_ADMIN)) return true;
+
   else {
     const permissions: TPermission[] = [...getPermissions(), 'FORBIDDEN'];
     const hasAccess = permissions.some((permission) => allowedAccess.includes(permission));
@@ -196,6 +200,10 @@ export const hasAccessPermission = (allowedAccess: TPermission[]): boolean => {
 
 export const getAccess = (allowedAccess: TPermission[], func: () => void, message = 'Unauthorized Access!') => {
   const hasAccess: boolean = hasAccessPermission(allowedAccess);
+  console.log('hasAccess', hasAccess);
+  console.log('allowedAccess', allowedAccess);
+  console.log('message', message);
+
 
   return hasAccess ? func() : notification.error({ message });
 };
@@ -206,6 +214,8 @@ interface IGetContentAccess<Record> {
 }
 
 export const getContentAccess = <Record = any>({ allowedAccess, content }: IGetContentAccess<Record>): Record => {
+  console.log('allowedAccess', allowedAccess);
+
   const hasAccess: boolean = hasAccessPermission(allowedAccess);
 
   return hasAccess ? content : null;
